@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>小账本</title>
+<meta name="description" content="简单好用的日常记账应用">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="小账本">
+<meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <button id="prevMonth" class="month-btn" aria-label="上一月">‹</button>
+      <div id="topbarTitle" class="topbar-title"></div>
+      <button id="nextMonth" class="month-btn" aria-label="下一月">›</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="view-home" class="view">
+      <div id="installHint" class="install-hint hidden">
+        <span>想要像 App 一样使用?点 Safari「分享」→「添加到主屏幕」</span>
+        <button id="installClose" aria-label="关闭">✕</button>
+      </div>
+      <div class="summary-card">
+        <div class="sum-label">本月支出</div>
+        <div class="sum-amount" id="monthExpense">¥0.00</div>
+        <div class="sum-row">
+          <div class="sum-item">
+            <div class="sum-item-label">本月收入</div>
+            <div class="sum-item-value" id="monthIncome">¥0.00</div>
+          </div>
+          <div class="sum-item">
+            <div class="sum-item-label">本月结余</div>
+            <div class="sum-item-value" id="monthBalance">¥0.00</div>
+          </div>
+        </div>
+      </div>
+      <div id="recordList" class="record-list"></div>
+    </section>
+
+    <section id="view-stats" class="view hidden">
+      <div class="stats-head">
+        <div class="seg" id="statsSeg">
+          <button class="seg-btn active" data-type="expense">支出</button>
+          <button class="seg-btn" data-type="income">收入</button>
+        </div>
+        <div class="stats-total" id="statsTotal">¥0.00</div>
+        <div class="stats-sub" id="statsSub"></div>
+      </div>
+      <canvas id="donut" class="donut" width="200" height="200"></canvas>
+      <div id="statsList" class="stats-list"></div>
+    </section>
+
+    <section id="view-settings" class="view hidden">
+      <div class="set-group">
+        <div class="set-title">数据</div>
+        <div class="set-card">
+          <div class="set-item"><span>记录条数</span><span id="dataCount" class="set-value">0 笔</span></div>
+          <button id="exportBtn" class="set-item"><span>导出备份</span><span class="chev">›</span></button>
+          <button id="importBtn" class="set-item"><span>导入备份</span><span class="chev">›</span></button>
+          <button id="clearBtn" class="set-item danger"><span>清空所有数据</span><span class="chev">›</span></button>
+        </div>
+      </div>
+      <div class="set-group">
+        <div class="set-title">安装到 iPhone</div>
+        <div class="set-card">
+          <div class="set-note">
+            1. 用 Safari 打开本页面<br>
+            2. 点击底部「分享」按钮<br>
+            3. 选择「添加到主屏幕」<br>
+            完成后即可像普通 App 一样从桌面启动,离线也能记账。
+          </div>
+        </div>
+      </div>
+      <div class="set-group">
+        <div class="set-title">关于</div>
+        <div class="set-card">
+          <div class="set-note">
+            小账本 v1.0<br>
+            所有数据仅保存在你的手机浏览器中,不会上传到任何服务器。建议定期使用「导出备份」保存数据。
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab active" data-tab="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
+      <span>明细</span>
+    </button>
+    <button id="addBtn" class="tab tab-add" aria-label="记一笔"><span class="add-circle">＋</span></button>
+    <button class="tab" data-tab="stats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>
+      <span>统计</span>
+    </button>
+    <button class="tab" data-tab="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h8M18 7h2M4 17h2M10 17h10"/><circle cx="15" cy="7" r="2.2"/><circle cx="7" cy="17" r="2.2"/></svg>
+      <span>设置</span>
+    </button>
+  </nav>
+
+  <div id="backdrop" class="backdrop"></div>
+
+  <section id="sheet" class="sheet" role="dialog" aria-modal="true">
+    <div class="sheet-head">
+      <button id="sheetCancel" class="sheet-cancel">取消</button>
+      <div class="seg" id="typeSeg">
+        <button class="seg-btn active" data-type="expense">支出</button>
+        <button class="seg-btn" data-type="income">收入</button>
+      </div>
+      <button id="sheetDelete" class="sheet-delete hidden">删除</button>
+    </div>
+    <div class="amount-row" id="amountRow">
+      <span class="amount-cur">¥</span><span id="amountText" class="amount-text">0.00</span>
+    </div>
+    <div id="noteWrap" class="note-wrap hidden">
+      <input id="noteInput" type="text" placeholder="写点备注…" maxlength="50">
+    </div>
+    <div id="catGrid" class="cat-grid"></div>
+    <div class="keypad" id="keypad">
+      <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button><button data-key="back" class="key-fn">⌫</button>
+      <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button><button data-key="date" class="key-fn" id="dateKeyBtn">今天</button>
+      <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button><button data-key="note" class="key-fn">备注</button>
+      <button data-key="dot">.</button><button data-key="0">0</button><button data-key="done" class="key-done">完成</button>
+    </div>
+    <input type="date" id="dateInput" class="hidden-date" tabindex="-1">
+  </section>
+
+</div>
+<script src="js/app.js"></script>
+</body>
+</html>
